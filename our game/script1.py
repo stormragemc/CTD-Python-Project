@@ -55,7 +55,10 @@ def show_clue(destination_name):
 
 def move_player(postal_code):
     global player_position
-    moves = {"1": (-1, 0), "2": (1, 0), "3": (0, -1), "4": (0, 1)}
+    moves = { "1": (0, -1),  
+        "2": (-1, 0),   
+        "3": (0, 1),  
+        "4": (1,0 )  }
     if postal_code in moves:
         dx, dy = moves[postal_code]
         new_x = player_position[0] + dx
@@ -101,7 +104,7 @@ def direction_to_destination():
         messagebox.showinfo("Direction", f"Direction to {final_destination_name}: {direction}")
 
 def handle_keypress(event):
-    key_to_postal = {"w": "1", "s": "2", "a": "3", "d": "4"}
+    key_to_postal = {"w": "1", "a": "2", "s": "3", "d": "4"}
     if event.char in key_to_postal:
         move_player(key_to_postal[event.char])
 
@@ -154,7 +157,7 @@ exit_button.pack(side="left", padx=20)
 
 choose_final_destination()
 draw_grid()
-draw_start_end()
+
 player = canvas.create_oval(
     player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
     player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10,
