@@ -7,11 +7,11 @@ window.title("Maze Navigator")
 
 grid_size = 20  # 20x20 grid
 cell_size = 25  # 25px per grid cell
-player_position = [0, 0]
+player_position = [11, 6]
 
 Locations = {
-    "Tang Zheng Tang Chinese Pavilion": (11, 3),
-    "Gym": (16, 7),
+    "Tang Zheng Tang, Chinese Pavilion": (10, 1),
+    "Gym": (16, 8),
     "T-lab": (6, 15),
     "OneStop Centre": (9, 15),
     "Albert Hong Lecture Theatre": (5, 17),
@@ -27,7 +27,7 @@ Locations = {
 final_destination = None
 final_destination_name = None
 
-walls = [(2, 2), (3, 3), (4, 4), (5, 2), (6, 6)]
+walls = [(0, 13), (0, 14), (1, 10), (1, 11), (1, 12),(1,13),(1,14),(2,10),(2,11),(2,12),(2,13),(2,14),(2,16),(2,17),(3,12),(3,13),(3,14),(3,16),(3,17),(3,18),(4,12),(4,13),(4,14),(4,16),(4,17),(4,18),(5,6),(5,7),(5,8),(5,9),(6,12),(6,13),(6,14),(6,16),(6,17),(6,18),(7,9),(7,11),(7,12),(7,13),(7,14),(7,16),(7,17),(7,18),(8,7),(8,9),(9,3),(10,1),(10,4),(10,8),(10,12),(10,13),(10,14),(11,11),(11,14),(12,6),(13,0),(13,3),(13,7),(14,1),(14,4),(15,2),(15,5),(15,9),(16,3),(16,9),(16,10),(17,7),(18,8),(18,10),(18,11),(18,12),(19,5),(19,6),(19,10),(19,11)]
 
 canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)
 canvas.pack()
@@ -42,11 +42,12 @@ def choose_final_destination():
 
 def show_instructions():
     messagebox.showinfo(
-        "Instructions",
+        "Instructions\n"
         "Welcome to Maze Navigator!\n\n"
         "Use the W, A, S, D keys to move:\n"
         "W = Up, S = Down, A = Left, D = Right.\n\n"
-        "Your goal is to reach the red square (Final Destination)."
+        "A description will be given to you, and your goal is to travel to the described location in SUTD."
+        "note: do not walk into the walls! (marked by solid lines)"
     )
 
 def show_clue(destination_name):
@@ -114,7 +115,7 @@ def start_game():
 
 def restart_game():
     global player_position, player
-    player_position = [0, 0]
+    player_position = [11,6]
     canvas.delete("all")  # Clear the canvas
     choose_final_destination()  # Reinitialize final destination
     draw_grid()  # Redraw the grid

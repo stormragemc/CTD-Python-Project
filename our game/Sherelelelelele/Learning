@@ -1,0 +1,58 @@
+##what does this do
+import tkinter as tk
+
+root = tk.Tk()
+
+root.geometry("800x500") ##(height v width)
+root.title("navigate the school") ##title name
+
+label = tk.Label(root, text = "Hello World!", font=('Cambria', 18)) ##adding text
+label.pack(padx=20, pady=20) ##adding padding; margin
+
+textbox = tk.Text(root, height=2, font=('arial', 16)) #height= no. of lines of textbox
+textbox.pack()
+
+window.menubar = tk.Menu(self.root)
+self.filemenu.add_command(label='Close', command=self.on_closing)
+self.filemenu.add_command(label='Close without question', command=exit)
+
+myentry = tk.Entry(root) # a textbox that is not multiline, good for short response like passwords
+myentry.pack()
+
+#BUTTONS
+button = tk.Button(root, text="Click me!", font=("Arial",18))
+button.pack(padx=10,pady=10)
+
+#creating a grid
+buttonframe = tk.Frame(root)
+buttonframe.columnconfigure(0, weight=1)
+buttonframe.columnconfigure(1, weight=1)
+buttonframe.columnconfigure(2, weight=1)
+
+btn1 = tk.Button(buttonframe, text="1", font=('Times New Roman', 18))
+btn1.grid(row=0, column=0, sticky=tk.W+tk.E) #sticky makes the buttons have no space in between them
+
+btn2 = tk.Button(buttonframe, text="2", font=('Times New Roman', 18))
+btn1.grid(row=0, column=1, sticky=tk.W+tk.E) #sticky makes the buttons have no space in between them
+
+btn3 = tk.Button(buttonframe, text="3", font=('Times New Roman', 18))
+btn1.grid(row=0, column=2, sticky=tk.W+tk.E) #sticky makes the buttons have no space in between them
+
+btn4 = tk.Button(buttonframe, text="4", font=('Times New Roman', 18))
+btn1.grid(row=1, column=0, sticky=tk.W+tk.E) #sticky makes the buttons have no space in between them
+
+btn5 = tk.Button(buttonframe, text="5", font=('Times New Roman', 18))
+btn1.grid(row=1, column=1, sticky=tk.W+tk.E) #sticky makes the buttons have no space in between them
+
+btn6 = tk.Button(buttonframe, text="6", font=('Times New Roman', 18))
+btn1.grid(row=1, column=2, sticky=tk.W+tk.E) #sticky makes the buttons have no space in between them
+
+buttonframe.pack(fill='x')
+
+#place function
+anotherbtn = tk.Button(root, text = 'Awesome')
+anotherbtn.place(x=200, y=200, height=100, width=100) #very manual thing to place widgets exactly where you want
+
+
+
+root.mainloop()
