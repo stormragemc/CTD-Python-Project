@@ -1,13 +1,17 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import simpledialog, messagebox
 import random
+import time  
 
 window = tk.Tk()
 window.title("Maze Navigator")
 
-grid_size = 20  # 20x20 grid
-cell_size = 25  # 25px per grid cell
+grid_size = 20  
+cell_size = 25  
 player_position = [0, 0]
+attempts = 0  
+total_time = 0  
+
 
 Locations = {
     "Tang Zheng Tang Chinese Pavilion": (11, 3),
@@ -27,12 +31,48 @@ Locations = {
 final_destination = None
 final_destination_name = None
 
-walls = [(2, 2), (3, 3), (4, 4), (5, 2), (6, 6)]
+
+walls = []
 
 canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)
 canvas.pack()
 
+
 player = None
+
+
+timer_label = tk.Label(window, text="Time: 0s", font=("Arial", 12))
+timer_label.pack(side="top", anchor="ne")
+
+
+def get_player_name():
+    name = simpledialog.askstring("Player Name", "Hello there Player, what is your name?")
+    return name
+
+
+def display_welcome_message(name):
+    messagebox.showinfo(
+        "Welcome to the Game!",
+        f"Hello {name}, welcome to our game of navigating through SUTD.\n\nPress the spacebar to skip.\n\n"
+        "This game was made possible by Srihari, Zhi Ying, Marcel, Kris, and Sherelle.\n"
+        "We welcome you into this game.\n\n"
+        "You will be navigating through the world-class SUTD campus, located in the heart of Singapore's innovation district. "
+        "The campus features state-of-the-art facilities designed to support interdisciplinary learning and cutting-edge research. "
+        "In this game, you will be navigating through Level 1 of the SUTD campus and experiencing different areas around the ground level "
+        "that are accessible to the public, without even having to touch the ground.\n"
+    )
+    messagebox.showinfo(
+        "Controls",
+        "You can navigate through the school compound using W to go up, S to go down, A to go left, and D to go right.\n\n"
+        "To quit the game, you can press ESC at any time."
+    )
+    messagebox.showinfo(
+        "Gameplay",
+        "We will give you a description of a specific location, and you will have to make your way there.\n\n"
+        "If you reach the wrong spot, a clue will be given to help guide you to the correct location."
+    )
+    messagebox.showinfo("Start the Adventure", f"Enjoy your adventure ahead, {name}!")
+
 
 def choose_final_destination():
     global final_destination, final_destination_name
@@ -40,25 +80,39 @@ def choose_final_destination():
     final_destination = Locations[final_destination_name]
     return final_destination_name
 
-def show_instructions():
-    messagebox.showinfo(
-        "Instructions",
-        "Welcome to Maze Navigator!\n\n"
-        "Use the W, A, S, D keys to move:\n"
-        "W = Up, S = Down, A = Left, D = Right.\n\n"
-        "Your goal is to reach the red square (Final Destination)."
-    )
 
-def show_clue(destination_name):
-    clue = Locations[destination_name]
-    messagebox.showinfo("Clue", f"Clue: {clue}")
+def update_player_position():
+    canvas.coords(player, player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
+                  player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10)
+    check_win_condition()
+
+def check_win_condition():
+    global attempts, total_time
+    if tuple(player_position) == final_destination:
+        
+        end_time = time.time() - start_time  
+        total_time += end_time  
+        attempts += 1 
+        messagebox.showinfo("Congratulations!", f"You reached {final_destination_name}! You win!")
+        canvas.create_text(
+            grid_size * cell_size // 2,
+            grid_size * cell_size // 2,
+            text="You Win!",
+            font=("Arial", 24),
+            fill="green"
+        )
+        
+        
+        if attempts >= 10:
+            messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
+            restart_button.config(state="normal")  
+        else:
+            restart_game()
+
 
 def move_player(postal_code):
     global player_position
-    moves = { "1": (0, -1),  
-        "2": (-1, 0),   
-        "3": (0, 1),  
-        "4": (1,0 )  }
+    moves = {"w": (-1, 0), "s": (1, 0), "a": (0, -1), "d": (0, 1)}
     if postal_code in moves:
         dx, dy = moves[postal_code]
         new_x = player_position[0] + dx
@@ -69,77 +123,40 @@ def move_player(postal_code):
         else:
             messagebox.showinfo("Blocked", "You hit a wall! Try a different direction.")
 
-def update_player_position():
-    canvas.coords(player, player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
-                  player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10)
-    check_win_condition()
-
-def check_win_condition():
-    if tuple(player_position) == final_destination:
-        messagebox.showinfo("Congratulations!", f"You reached {final_destination_name}!")
-        canvas.create_text(
-            grid_size * cell_size // 2,
-            grid_size * cell_size // 2,
-            text="You Win!",
-            font=("Arial", 24),
-            fill="green"
-        )
-
-def direction_to_destination():
-    player_x, player_y = player_position
-    dest_x, dest_y = final_destination
-    
-    direction = ""
-    if player_x < dest_x:
-        direction = "Move Down"
-    elif player_x > dest_x:
-        direction = "Move Up"
-    
-    if player_y < dest_y:
-        direction += " and Move Right"
-    elif player_y > dest_y:
-        direction += " and Move Left"
-    
-    if direction:
-        messagebox.showinfo("Direction", f"Direction to {final_destination_name}: {direction}")
 
 def handle_keypress(event):
-    key_to_postal = {"w": "1", "a": "2", "s": "3", "d": "4"}
-    if event.char in key_to_postal:
-        move_player(key_to_postal[event.char])
+    move_player(event.char)
 
-def start_game():
+
+def restart_game():
+    global player_position, player, start_time
+    player_position = [0, 0]
+    canvas.delete("all")
     choose_final_destination()
     draw_grid()
     draw_start_end()
-    show_instructions()
-    show_clue(final_destination_name)
-
-def restart_game():
-    global player_position, player
-    player_position = [0, 0]
-    canvas.delete("all")  # Clear the canvas
-    choose_final_destination()  # Reinitialize final destination
-    draw_grid()  # Redraw the grid
-    draw_start_end()  # Redraw the start and final destination
     player = canvas.create_oval(
         player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
         player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10,
         fill="blue"
     )
+    start_time = time.time()  
+
 
 def exit_game():
     window.quit()
+
 
 def draw_grid():
     for i in range(grid_size):
         for j in range(grid_size):
             x1, y1 = i * cell_size, j * cell_size
             x2, y2 = x1 + cell_size, y1 + cell_size
-            if (i, j) in walls:
-                canvas.create_rectangle(x1, y1, x2, y2, fill="gray", outline="black")  # Wall
+            if (i, j) in Locations.values():
+                canvas.create_rectangle(x1, y1, x2, y2, fill="red", outline="black")  
             else:
-                canvas.create_rectangle(x1, y1, x2, y2, outline="black")  # Regular cell
+                canvas.create_rectangle(x1, y1, x2, y2, outline="black")  
+
 
 def draw_start_end():
     canvas.create_rectangle(player_position[0] * cell_size, player_position[1] * cell_size,
@@ -149,22 +166,41 @@ def draw_start_end():
                             final_destination[0] * cell_size + cell_size, final_destination[1] * cell_size + cell_size,
                             fill="red")
 
-restart_button = tk.Button(window, text="Restart", command=restart_game)
+
+
+restart_button = tk.Button(window, text="Restart", command=restart_game, state="disabled")
 restart_button.pack(side="left", padx=20)
 
 exit_button = tk.Button(window, text="Exit", command=exit_game)
 exit_button.pack(side="left", padx=20)
 
-choose_final_destination()
-draw_grid()
 
-player = canvas.create_oval(
-    player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
-    player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10,
-    fill="blue"
-)
-start_game()
+player_name = get_player_name()
+if player_name:
+    display_welcome_message(player_name)
+    choose_final_destination()
+    draw_grid()
+    draw_start_end()
+    player = canvas.create_oval(
+        player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
+        player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10,
+        fill="blue"
+    )
+
+
+start_time = time.time()
+
+
+def update_timer():
+    elapsed_time = time.time() - start_time
+    timer_label.config(text=f"Time: {elapsed_time:.2f}s")
+    window.after(100, update_timer)
+
+
+update_timer()
+
 
 window.bind("<Key>", handle_keypress)
+
 
 window.mainloop()
