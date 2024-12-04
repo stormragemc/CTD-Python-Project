@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 from tkinter import simpledialog, messagebox
 import random
 import time  
+from copy import deepcopy
 
 window = tk.Tk()
 window.title("Maze Navigator")
@@ -30,6 +31,7 @@ Locations = {
     "Campus Centre":  (7, 17) ,
     "Vending machines":  (6, 12), 
 }   
+BackupLocationsDictionary = deepcopy(Locations)
 
 final_destination = None
 final_destination_name = None
@@ -91,8 +93,8 @@ def choose_final_destination():
 def update_player_position():
     canvas.coords(player, player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
                   player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10)
-    if tuple(player_position) in  Locations.values() and tuple(player_position) != final_destination: #i put the popup for every key building here so it can check every time the player changes position
-                for key,val in Locations.items():
+    if tuple(player_position) in  BackupLocationsDictionary.values() and tuple(player_position) != final_destination: #i put the popup for every key building here so it can check every time the player changes position
+                for key,val in BackupLocationsDictionary.items():
                     if val == tuple(player_position):
                         messagebox.showinfo("Key Area", key)
     check_win_condition()
@@ -115,7 +117,9 @@ def check_win_condition():
         
         if attempts >= 10:
             messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
-            
+            Locations.clear()  
+            Locations.update(BackupLocationsDictionary)
+            attempts = 0
             restart_button.config(state="normal")  
         else:
             restart_game()
@@ -176,7 +180,7 @@ def draw_grid():
         for j in range(grid_size):
             x1, y1 = i * cell_size, j * cell_size
             x2, y2 = x1 + cell_size, y1 + cell_size
-            if (i, j)  in Locations.values():
+            if (i, j)  in BackupLocationsDictionary.values():
                 canvas.create_rectangle(x1, y1, x2, y2, fill="red", outline="black")  
             else:
                 canvas.create_rectangle(x1, y1, x2, y2, outline="black")  
