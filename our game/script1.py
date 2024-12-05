@@ -19,10 +19,10 @@ total_time = 0
 image = Image.open("our game//photo_2024-12-04_13-54-20.png") #background image raw
 img = image.resize((860,620))
 img = ImageTk.PhotoImage(img) #resize and reformat the original background image using PILLOW  library to make it fit the canvas well
-star_image = Image.open("our game//star.png")  # Replace with the path to your star image
-star_image = star_image.resize((cell_size, 20))  # Resize to fit the cell
+star_image = Image.open("our game//star.png")  # the star sprite marking each key building
+star_image = star_image.resize((cell_size, 20))  
 star_photo = ImageTk.PhotoImage(star_image)  
-style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red')
+style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
 Locations = {
     "Tang Zheng Tang Chinese Pavilion":  (10, 1),
     "Gym":  (17, 7) ,
@@ -48,7 +48,7 @@ Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between hous
              "Upper Changi MRT" : "The leftmost location",
              "D'Star Bistro": "The path between Building 1 and 2",
              "Campus Centre" : "The site that connects the three main buildings",
-             "Vending machines" : "Come to our Canteen"}
+             "Vending machines" : "Come to our Canteen"} #dictionary for clues
 
 BackupLocationsDictionary = deepcopy(Locations) #backup dictionary so when Locations gets popped all other values are maintained using this backup 
 
@@ -204,7 +204,7 @@ def draw_grid():
             x2, y2 = x1 + cell_size, y1 + cell_size
             if (i, j)  in BackupLocationsDictionary.values(): #use the backup dictionary since it maintains Locations' original values
                 # canvas.create_rectangle(x1, y1, x2, y2, fill="red", outline="black")  
-                canvas.create_image(x1, y1, anchor="nw", image=star_photo)
+                canvas.create_image(x1, y1, anchor="nw", image=star_photo) #generate a star sprite for key building
             else:
                 canvas.create_rectangle(x1, y1, x2, y2, outline="black")  
 
@@ -217,7 +217,7 @@ def draw_start_end():
     
 
 
-Clue_button = Button(window, text="Clue", command=get_clue, style = 'clue.TButton')
+Clue_button = Button(window, text="Clue", command=get_clue, style = 'clue.TButton') #generates clues for where the destination is
 Clue_button.pack(side="left", padx=20)
 
 
