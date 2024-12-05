@@ -1,45 +1,57 @@
 import tkinter as tk
+from tkinter.ttk import Style, Button
+from PIL import Image, ImageTk
 from tkinter import simpledialog, messagebox
 import random
 import time  
 
+from copy import deepcopy
+
 window = tk.Tk()
 window.title("Maze Navigator")
-
+style = Style()
 grid_size = 20  
 cell_size = 25  
 player_position = [0, 0]
 attempts = 0  
 total_time = 0  
 
-
+image = Image.open("our game//photo_2024-12-04_13-54-20.png") #background image raw
+img = image.resize((860,620))
+img = ImageTk.PhotoImage(img) #resize and reformat the original background image using PILLOW  library to make it fit the canvas well
+star_image = Image.open("our game//star.png")  # Replace with the path to your star image
+star_image = star_image.resize((cell_size, 20))  # Resize to fit the cell
+star_photo = ImageTk.PhotoImage(star_image)  
+style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red')
 Locations = {
-    "Tang Zheng Tang Chinese Pavilion": (11, 3),
-    "Gym": (16, 7),
-    "T-lab": (6, 15),
-    "OneStop Centre": (9, 15),
-    "Albert Hong Lecture Theatre": (5, 17),
-    "Scrapyard": (8, 8),
-    "Swimming pool": (17, 5),
-    "Fab-Lab": (6, 9),
-    "Upper Changi MRT": (2, 15),
-    "D'Star Bistro": (7, 15),
-    "Campus Centre": (8, 15),
-    "Vending machines": (5, 13)
-}
+    "Tang Zheng Tang Chinese Pavilion":  (10, 1),
+    "Gym":  (17, 7) ,
+    "T-lab":  (4, 16) ,
+    "OneStop Centre":  (7, 18) ,
+    "Albert Hong Lecture Theatre":  (2, 19) ,
+    "Scrapyard":  (7, 9) ,
+    "Swimming pool":  (18, 6) ,
+    "Fab-Lab":  (6, 7) ,
+    "Upper Changi MRT":  (0, 14) ,
+    "D'Star Bistro":  (5, 18) ,
+    "Campus Centre":  (7, 17) ,
+    "Vending machines":  (6, 12), 
+}   
+Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between housing blocks", 
+             "Gym" : "Look to the far right",
+             "T-lab": "Building 2 area",
+             "OneStop Centre" : "Inside the Campus Centre",
+             "Albert Hong Lecture Theatre" : "Building 1 Area",
+             "Scrapyard" : "Located within the Fab Lab Area",
+             "Swimming pool" : "Sports and Recreation Area",
+             "Fab-Lab" : "Find Building 5",
+             "Upper Changi MRT" : "The leftmost location",
+             "D'Star Bistro": "The path between Building 1 and 2",
+             "Campus Centre" : "The site that connects the three main buildings",
+             "Vending machines" : "Come to our Canteen"}
 
-Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Find a building on water", 
-             "Gym" : "Uncover SUTD's mewing hideout (translation: a place where you can work out)",
-             "T-lab": "sugarcoated shop",
-             "OneStop Centre" : "Go to our general office",
-             "Albert Hong Lecture Theatre" : "Find a place where lessons are conducted",
-             "Scrapyard" : "Locate the area to discard and reuse waste",
-             "Swimming pool" : "An area with a lifeguard",
-             "Fab-Lab" : "Go to the place where nothing becomes something",
-             "Upper Changi MRT" : "Find our favourite transport mode",
-             "D'Star Bistro": "Rediscover the area with western food",
-             "Campus Centre" : "Unveil the region where fairs are usually performed (aka. Main lobby)",
-             "Vending machines" : "Go to a place near the machinery systems that dispenses meals and drinks"}
+BackupLocationsDictionary = deepcopy(Locations) #backup dictionary so when Locations gets popped all other values are maintained using this backup 
+
 
 final_destination = None
 final_destination_name = None
@@ -92,22 +104,30 @@ def display_welcome_message(name):
 def choose_final_destination():
     global final_destination, final_destination_name
     final_destination_name = random.choice(list(Locations.keys()))
-    final_destination = Locations[final_destination_name]
+    final_destination = Locations[final_destination_name] 
+    Locations.pop(final_destination_name) #prevent the same location from being used as a final destination more than once a round
+    canvas.create_image(-90, -45, anchor = tk.NW, image=img) #background image 
+    destination_label.config(text=f"Find: {final_destination_name}")
     return final_destination_name
+
 
 
 def update_player_position():
     canvas.coords(player, player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
                   player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10)
+    if tuple(player_position) in  BackupLocationsDictionary.values() and tuple(player_position) != final_destination: #checks every time the player changes position
+                for key,val in BackupLocationsDictionary.items(): #use the backup dictionary since it maintains Locations' original values
+                    if val == tuple(player_position):
+                        messagebox.showinfo("Key Area", key) #if player steps on a key site/building, a popup shows its name
     check_win_condition()
 
 def check_win_condition():
     global attempts, total_time
-    if tuple(player_position) == final_destination:
+    if tuple(player_position) == final_destination: 
         
         end_time = time.time() - start_time  
         total_time += end_time  
-        attempts += 1 
+        attempts += 1 #new round
         messagebox.showinfo("Congratulations!", f"You reached {final_destination_name}! You win!")
         canvas.create_text(
             grid_size * cell_size // 2,
@@ -116,25 +136,36 @@ def check_win_condition():
             font=("Arial", 24),
             fill="green"
         )
-        restart_button.config(state="normal")
         
-        if attempts >= 3:
+        if attempts >= 10:
             messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
-              
-        elif attempts <3:
+            Locations.clear()  #clear any remaining items in the dictionary
+            Locations.update(BackupLocationsDictionary) #set Locations back to its original form by putting in all items in the backup dictionary
+            attempts = 0 #reset the rounds
+            restart_button.config(state="normal")   
+        else:
             restart_game()
 
 
 def move_player(postal_code):
     global player_position
-    moves = {"w": (-1, 0), "s": (1, 0), "a": (0, -1), "d": (0, 1)}
-    if postal_code in moves and attempts<3:
+    moves = {"w": (0, -1),  
+        "a": (-1, 0),   
+        "s": (0, 1),  
+        "d": (1,0 ) }
+    if postal_code in moves:
         dx, dy = moves[postal_code]
         new_x = player_position[0] + dx
         new_y = player_position[1] + dy
+        
         if (0 <= new_x < grid_size and 0 <= new_y < grid_size) and (new_x, new_y) not in walls:
             player_position = [new_x, new_y]
+            
             update_player_position()
+            
+            
+                
+            
         else:
             messagebox.showinfo("Blocked", "You hit a wall! Try a different direction.")
 
@@ -144,22 +175,22 @@ def handle_keypress(event):
 
 
 def restart_game():
+    
+    
     global player_position, player, start_time
     player_position = [0, 0]
     canvas.delete("all")
+    
     choose_final_destination()
     draw_grid()
     draw_start_end()
     player = canvas.create_oval(
         player_position[0] * cell_size + 10, player_position[1] * cell_size + 10,
         player_position[0] * cell_size + cell_size - 10, player_position[1] * cell_size + cell_size - 10,
-        fill="blue"
+        fill = "blue"
     )
+    messagebox.showinfo('','Round {}'.format(attempts+1)) #popup for new rounds
     start_time = time.time()  
-def restart_game_official():
-    global attempts
-    attempts=0
-    restart_game()
 
 
 def exit_game():
@@ -171,8 +202,9 @@ def draw_grid():
         for j in range(grid_size):
             x1, y1 = i * cell_size, j * cell_size
             x2, y2 = x1 + cell_size, y1 + cell_size
-            if (i, j) in Locations.values():
-                canvas.create_rectangle(x1, y1, x2, y2, fill="red", outline="black")  
+            if (i, j)  in BackupLocationsDictionary.values(): #use the backup dictionary since it maintains Locations' original values
+                # canvas.create_rectangle(x1, y1, x2, y2, fill="red", outline="black")  
+                canvas.create_image(x1, y1, anchor="nw", image=star_photo)
             else:
                 canvas.create_rectangle(x1, y1, x2, y2, outline="black")  
 
@@ -181,21 +213,25 @@ def draw_start_end():
     canvas.create_rectangle(player_position[0] * cell_size, player_position[1] * cell_size,
                             player_position[0] * cell_size + cell_size, player_position[1] * cell_size + cell_size,
                             fill="green")
-    canvas.create_rectangle(final_destination[0] * cell_size, final_destination[1] * cell_size,
-                            final_destination[0] * cell_size + cell_size, final_destination[1] * cell_size + cell_size,
-                            fill="red")
+    canvas.create_image(final_destination[0] * cell_size, final_destination[1] * cell_size, anchor = "nw", image = star_photo )
+    
 
 
-Clue_button = tk.Button(window, text="Clue", command=get_clue)
+Clue_button = Button(window, text="Clue", command=get_clue, style = 'clue.TButton')
 Clue_button.pack(side="left", padx=20)
 
-restart_button = tk.Button(window, text="Restart", command=restart_game_official, state="disabled")
+
+
+
+
+restart_button = tk.Button(window, text="Restart", command=restart_game, state="disabled")
 restart_button.pack(side="left", padx=20)
 
 exit_button = tk.Button(window, text="Exit", command=exit_game)
 exit_button.pack(side="left", padx=20)
 
-
+destination_label = tk.Label(window, text="", font=("Arial", 21))
+destination_label.pack(side="left", padx=250) #text telling you which building you should find to win the round
 player_name = get_player_name()
 if player_name:
     display_welcome_message(player_name)
@@ -213,8 +249,9 @@ start_time = time.time()
 
 
 def update_timer():
+    if attempts>=10:
+        return #stop the timer after 10 attempts
     elapsed_time = time.time() - start_time
-    
     timer_label.config(text=f"Time: {elapsed_time:.2f}s")
     window.after(100, update_timer)
 
