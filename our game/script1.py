@@ -14,7 +14,7 @@ player_position = [0, 0]
 attempts = 0  
 total_time = 0  
 
-image = Image.open("our game/photo_2024-12-04_13-54-20.png") #background image raw
+image = Image.open("our game//photo_2024-12-04_13-54-20.png") #background image raw
 img = image.resize((860,620))
 img = ImageTk.PhotoImage(img) #resize and reformat the original background image using PILLOW  library to make it fit the canvas well
 Locations = {
