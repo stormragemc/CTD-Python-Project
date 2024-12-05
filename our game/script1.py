@@ -28,6 +28,19 @@ Locations = {
     "Vending machines": (5, 13)
 }
 
+Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Find a building on water", 
+             "Gym" : "Uncover SUTD's mewing hideout (translation: a place where you can work out)",
+             "T-lab": "sugarcoated shop",
+             "OneStop Centre" : "Go to our general office",
+             "Albert Hong Lecture Theatre" : "Find a place where lessons are conducted",
+             "Scrapyard" : "Locate the area to discard and reuse waste",
+             "Swimming pool" : "An area with a lifeguard",
+             "Fab-Lab" : "Go to the place where nothing becomes something",
+             "Upper Changi MRT" : "Find our favourite transport mode",
+             "D'Star Bistro": "Rediscover the area with western food",
+             "Campus Centre" : "Unveil the region where fairs are usually performed (aka. Main lobby)",
+             "Vending machines" : "Go to a place near the machinery systems that dispenses meals and drinks"}
+
 final_destination = None
 final_destination_name = None
 
@@ -44,7 +57,9 @@ player = None
 timer_label = tk.Label(window, text="Time: 0s", font=("Arial", 12))
 timer_label.pack(side="top", anchor="ne")
 
-
+def get_clue():
+    clue=Locations_clue[final_destination_name]
+    messagebox.showinfo("Clue", f"{clue}\n")
 def get_player_name():
     name = simpledialog.askstring("Player Name", "Hello there Player, what is your name?")
     return name
@@ -101,19 +116,19 @@ def check_win_condition():
             font=("Arial", 24),
             fill="green"
         )
+        restart_button.config(state="normal")
         
-        
-        if attempts >= 10:
+        if attempts >= 3:
             messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
-            restart_button.config(state="normal")  
-        else:
+              
+        elif attempts <3:
             restart_game()
 
 
 def move_player(postal_code):
     global player_position
     moves = {"w": (-1, 0), "s": (1, 0), "a": (0, -1), "d": (0, 1)}
-    if postal_code in moves:
+    if postal_code in moves and attempts<3:
         dx, dy = moves[postal_code]
         new_x = player_position[0] + dx
         new_y = player_position[1] + dy
@@ -141,6 +156,10 @@ def restart_game():
         fill="blue"
     )
     start_time = time.time()  
+def restart_game_official():
+    global attempts
+    attempts=0
+    restart_game()
 
 
 def exit_game():
@@ -167,8 +186,10 @@ def draw_start_end():
                             fill="red")
 
 
+Clue_button = tk.Button(window, text="Clue", command=get_clue)
+Clue_button.pack(side="left", padx=20)
 
-restart_button = tk.Button(window, text="Restart", command=restart_game, state="disabled")
+restart_button = tk.Button(window, text="Restart", command=restart_game_official, state="disabled")
 restart_button.pack(side="left", padx=20)
 
 exit_button = tk.Button(window, text="Exit", command=exit_game)
@@ -193,6 +214,7 @@ start_time = time.time()
 
 def update_timer():
     elapsed_time = time.time() - start_time
+    
     timer_label.config(text=f"Time: {elapsed_time:.2f}s")
     window.after(100, update_timer)
 
