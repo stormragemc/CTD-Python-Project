@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter.ttk import Style, Button
+
 from tkinter import simpledialog, messagebox
 import random
 import time  
@@ -14,9 +15,9 @@ attempts = 0
 total_time = 0  
 
 rawStar = tk.PhotoImage(file = 'our game//star.png')
-star = rawStar.subsample(15,15) #star sprite image for marking each location
+star = rawStar.subsample(15,15)
 bgImage = tk.PhotoImage(file = 'our game//bgImage.png')
-resizedImage = bgImage.zoom(7,7).subsample(12,12) #background image (map of sutd)
+resizedImage = bgImage.zoom(7,7).subsample(12,12)
 
 
 style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
@@ -52,7 +53,7 @@ final_destination = None
 final_destination_name = None
 walls = []
 canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)
-bg= canvas.create_image(0,0, anchor = tk.NW, image=resizedImage)
+
 canvas.pack()
 
 player = None
@@ -168,7 +169,7 @@ def restart_game():
 def exit_game():
     window.quit()
 def draw_grid():
-    
+    bg= canvas.create_image(0,0, anchor = tk.NW, image=resizedImage) #load the background image alongside the grid being drawn
     for i in range(grid_size):
         for j in range(grid_size):
             x1, y1 = i * cell_size, j * cell_size
