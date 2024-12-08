@@ -10,9 +10,9 @@ from copy import deepcopy
 window = tk.Tk()
 window.title("Maze Navigator")
 style = Style()
-grid_size = 20  # 20x20 grid
-cell_size = 25  # 25px per grid cell
-player_position = [11, 6]
+grid_size = 20  
+cell_size = 25  
+player_position = [0, 0]
 attempts = 0  
 total_time = 0  
 
@@ -24,24 +24,40 @@ star_image = star_image.resize((cell_size, 20))
 star_photo = ImageTk.PhotoImage(star_image)  
 style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
 Locations = {
-    "Tang Zheng Tang, Chinese Pavilion": (10, 2) or (11,1),
-    "Gym": (16, 8),
-    "T-lab": (6, 15),
-    "OneStop Centre": (9, 15),
-    "Albert Hong Lecture Theatre": (5, 17),
-    "Scrapyard": (8, 8),
-    "Swimming pool": (17, 5),
-    "Fab-Lab": (6, 9),
-    "Upper Changi MRT": (2, 15),
-    "D'Star Bistro": (7, 15),
-    "Campus Centre": (8, 15),
-    "Vending machines": (5, 13)
-}
+    "Tang Zheng Tang Chinese Pavilion":  (10, 1),
+    "Gym":  (17, 7) ,
+    "T-lab":  (4, 16) ,
+    "OneStop Centre":  (7, 18) ,
+    "Albert Hong Lecture Theatre":  (2, 19) ,
+    "Scrapyard":  (7, 9) ,
+    "Swimming pool":  (18, 6) ,
+    "Fab-Lab":  (6, 7) ,
+    "Upper Changi MRT":  (0, 14) ,
+    "D'Star Bistro":  (5, 18) ,
+    "Campus Centre":  (7, 17) ,
+    "Vending machines":  (6, 12), 
+}   
+Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between housing blocks", 
+             "Gym" : "Look to the far right",
+             "T-lab": "Building 2 area",
+             "OneStop Centre" : "Inside the Campus Centre",
+             "Albert Hong Lecture Theatre" : "Building 1 Area",
+             "Scrapyard" : "Located within the Fab Lab Area",
+             "Swimming pool" : "Sports and Recreation Area",
+             "Fab-Lab" : "Find Building 5",
+             "Upper Changi MRT" : "The leftmost location",
+             "D'Star Bistro": "The path between Building 1 and 2",
+             "Campus Centre" : "The site that connects the three main buildings",
+             "Vending machines" : "Come to our Canteen"} #dictionary for clues
+
+BackupLocationsDictionary = deepcopy(Locations) #backup dictionary so when Locations gets popped all other values are maintained using this backup 
+
 
 final_destination = None
 final_destination_name = None
 
-walls = [(0, 13), (0, 14), (1, 10), (1, 11), (1, 12),(1,13),(1,14),(2,10),(2,11),(2,12),(2,13),(2,14),(2,16),(2,17),(3,12),(3,13),(3,14),(3,16),(3,17),(3,18),(4,12),(4,13),(4,14),(4,16),(4,17),(4,18),(5,6),(5,7),(5,8),(5,9),(6,12),(6,13),(6,14),(6,16),(6,17),(6,18),(7,9),(7,11),(7,12),(7,13),(7,14),(7,16),(7,17),(7,18),(8,7),(8,9),(9,3),(10,1),(10,4),(10,8),(10,12),(10,13),(10,14),(11,11),(11,14),(12,6),(13,0),(13,3),(13,7),(14,1),(14,4),(15,2),(15,5),(15,9),(16,3),(16,9),(16,10),(17,7),(18,8),(18,10),(18,11),(18,12),(19,5),(19,6),(19,10),(19,11)]
+
+walls = []
 
 canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)
 canvas.pack()
@@ -156,6 +172,7 @@ def move_player(postal_code):
 
 def handle_keypress(event):
     move_player(event.char)
+
 
 def restart_game():
     
