@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter.ttk import Style, Button
-
 from tkinter import simpledialog, messagebox
 import random
 import time  
@@ -8,11 +7,13 @@ from copy import deepcopy
 window = tk.Tk()
 window.title("Maze Navigator")
 style = Style()
-grid_size = 20  
+grid_size = 20 
 cell_size = 25  
 player_position = [0, 0]
 attempts = 0  
 total_time = 0  
+
+
 
 rawStar = tk.PhotoImage(file = 'our game//star.png')
 star = rawStar.subsample(15,15)
@@ -22,18 +23,18 @@ resizedImage = bgImage.zoom(7,7).subsample(12,12)
 
 style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
 Locations = {
-    "Tang Zheng Tang Chinese Pavilion":  (10, 1),
-    "Gym":  (17, 7) ,
-    "T-lab":  (4, 16) ,
-    "OneStop Centre":  (7, 18) ,
-    "Albert Hong Lecture Theatre":  (2, 19) ,
-    "Scrapyard":  (7, 9) ,
-    "Swimming pool":  (18, 6) ,
-    "Fab-Lab":  (6, 7) ,
-    "Upper Changi MRT":  (0, 14) ,
-    "D'Star Bistro":  (5, 18) ,
-    "Campus Centre":  (7, 17) ,
-    "Vending machines":  (6, 12), 
+     "Tang Zheng Tang Chinese Pavilion":  (10, 2),
+    "Gym":  (16, 7) ,
+    "T-lab":  (7, 15) ,
+    "OneStop Centre":  (9, 15) ,
+    "Albert Hong Lecture Theatre":  (5, 17) ,
+    "Scrapyard":  (8,8) ,
+    "Swimming pool":  (17,5) ,
+    "Fab-Lab":  (6, 9) ,
+    "Upper Changi MRT":  (2, 15) ,
+    "D'Star Bistro":  (7, 15) ,
+    "Campus Centre":  (8, 15) ,
+    "Vending machines":  (5, 13),  
 }   
 Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between housing blocks", 
              "Gym" : "Look to the far right",
@@ -153,6 +154,7 @@ def handle_keypress(event):
 def restart_game():     
     global player_position, player, start_time
     player_position = [0, 0]
+    
     canvas.delete("all")
     choose_final_destination()
     draw_grid()
@@ -167,7 +169,8 @@ def restart_game():
     messagebox.showinfo('','Round {}'.format(attempts+1)) #popup for new rounds
     start_time = time.time()  
 def exit_game():
-    window.quit()
+    if messagebox.askokcancel("Quit", "Do you really want to quit?"):
+        window.destroy()
 def draw_grid():
     bg= canvas.create_image(0,0, anchor = tk.NW, image=resizedImage) #load the background image alongside the grid being drawn
     for i in range(grid_size):
