@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter.ttk import Style, Button
 from tkinter import simpledialog, messagebox
+import requests
 import random
 import time  
 from copy import deepcopy
@@ -13,17 +14,25 @@ cell_size = 25
 player_position = [0, 0]
 attempts = 0  
 total_time = 0  
+getStarURL = requests.get('https://i.ibb.co/JpyHGwB/star.png') #I hosted the image in i.ibb.co
+getStarURL.raise_for_status() 
+with open("star.png", "wb") as file: #After url acquired, save the image into file
+    file.write(getStarURL.content)
 
-rawStar = tk.PhotoImage(file = 'meow.png')
-star = rawStar.subsample(15,15)
-bgImage = tk.PhotoImage(file = 'image//1-b5c82945.png')
-resizedImage = bgImage.zoom(7,7).subsample(12,12)
+getbgImageURL = requests.get('https://i.ibb.co/r3gDFzx/bgImage.png')
+getbgImageURL.raise_for_status()
+with open("bgImage.png", "wb") as file:
+    file.write(getbgImageURL.content)
+rawStar = tk.PhotoImage(file = 'star.png')
+star = rawStar.subsample(10,10)
+bgImage = tk.PhotoImage(file = 'bgImage.png')
+resizedImage = bgImage.zoom(25,25).subsample(9,9)
 
 style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
 Locations = {
-    "Tang Zheng Tang Chinese Pavilion":  (10, 2),
+     "Tang Zheng Tang Chinese Pavilion":  (10, 2),
     "Gym":  (16, 7) ,
-    "T-lab":  (7, 15) ,
+    "T-lab":  (5, 15) ,
     "OneStop Centre":  (9, 15) ,
     "Albert Hong Lecture Theatre":  (5, 17) ,
     "Scrapyard":  (8,8) ,
@@ -32,7 +41,7 @@ Locations = {
     "Upper Changi MRT":  (2, 15) ,
     "D'Star Bistro":  (7, 15) ,
     "Campus Centre":  (8, 15) ,
-    "Vending machines":  (5, 13),  
+    "Vending machines":  (5, 13),   
 }   
 Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between housing blocks", 
              "Gym" : "Look to the far right",
@@ -152,6 +161,7 @@ def handle_keypress(event):
 
 def restart_game():
     global player_position, player, start_time
+    update_timer()
     player_position = [0, 0]
     canvas.delete("all")
     choose_final_destination()
@@ -183,7 +193,7 @@ def draw_grid():
                 canvas.create_image(x1, y1, anchor="nw", image=star)
             else:
                 canvas.create_rectangle(x1, y1, x2, y2, outline="black")
-
+    
 def draw_start_end():
     canvas.create_rectangle(player_position[0] * cell_size, 
                             player_position[1] * cell_size,
