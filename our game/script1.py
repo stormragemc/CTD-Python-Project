@@ -5,20 +5,24 @@ import requests
 import random
 import time  
 from copy import deepcopy
-
-window = tk.Tk()
-window.title("Maze Navigator")
-style = Style()
-grid_size = 20  
-cell_size = 25  
-player_position = [0, 0]
-attempts = 0  
-total_time = 0  
-getStarURL = requests.get('https://i.ibb.co/JpyHGwB/star.png') #I hosted the image in i.ibb.co
+#initialize the variables
+window = tk.Tk() #assign tkinter UI window
+window.title("Maze Navigator") #title of UI window
+style = Style() #for clue button style
+grid_size = 20   #20x20 grid
+cell_size = 25  #25 pixel cell size
+player_position = [0, 0] #starting position of player
+attempts = 0  #what round
+total_time = 0  #initialize total time taken to complete the game
+player = None #initialize player state
+final_destination = None #initialize final destination
+final_destination_name = None #initialize final destination's name
+walls = [(0, 13),(0, 14), (1, 10), (1, 11), (1, 12),(1,13),(1,14),(2,10),(2,11),(2,12),(2,13),(2,14),(2,16),(2,17),(3,12),(3,13),(3,14),(3,16),(3,17),(3,18),(4,12),(4,13),(4,14),(4,16),(4,17),(4,18),(5,6),(5,7),(5,8),(5,9),(6,12),(6,13),(6,14),(6,16),(6,17),(6,18),(7,9),(7,11),(7,12),(7,13),(7,14),(7,16),(7,17),(7,18),(8,7),(8,9),(9,3),(10,1),(10,4),(10,8),(10,12),(10,13),(10,14),(11,11),(11,14),(12,6),(13,0),(13,3),(13,7),(14,1),(14,4),(15,2),(15,5),(15,9),(16,3),(16,9),(16,10),(17,7),(18,8),(18,10),(18,11),(18,12),(19,5),(19,6),(19,10),(19,11)]
+#Obstacles position coordinates
+getStarURL = requests.get('https://i.ibb.co/JpyHGwB/star.png') #make HTTP request to acquire our web-hosted image URL
 getStarURL.raise_for_status() 
 with open("star.png", "wb") as file: #After url acquired, save the image into file
     file.write(getStarURL.content)
-
 getbgImageURL = requests.get('https://i.ibb.co/r3gDFzx/bgImage.png')
 getbgImageURL.raise_for_status()
 with open("bgImage.png", "wb") as file:
@@ -28,9 +32,10 @@ star = rawStar.subsample(10,10)
 bgImage = tk.PhotoImage(file = 'bgImage.png')
 resizedImage = bgImage.zoom(25,25).subsample(9,9)
 
-style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
+timer_label = tk.Label(window, text="Time: 0s", font=("Arial", 12)) #label for the timer value
+timer_label.pack(side="top", anchor="ne")
 
-Locations = {
+Locations = { #Coordinates of each important site's markers
      "Tang Zheng Tang Chinese Pavilion":  (10, 2),
     "Gym":  (16, 7) ,
     "T-lab":  (5, 15) ,
@@ -44,7 +49,7 @@ Locations = {
     "Campus Centre":  (8, 15) ,
     "Vending machines":  (5, 13),   
 }   
-Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between housing blocks", 
+Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between housing blocks",  #Clue for each location
              "Gym" : "Look to the far right",
              "T-lab": "Building 2 area",
              "OneStop Centre" : "Inside the Campus Centre",
@@ -58,30 +63,19 @@ Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between hous
              "Vending machines" : "Come to our Canteen"} #dictionary for clues
 
 BackupLocationsDictionary = deepcopy(Locations) #backup dictionary so when Locations gets popped all other values are maintained using this backup 
-final_destination = None
-final_destination_name = None
-walls = [(0, 13),
- (0, 14), 
- (1, 10), 
- (1, 11), (1, 12),(1,13),(1,14),(2,10),(2,11),(2,12),(2,13),(2,14),(2,16),(2,17),(3,12),(3,13),(3,14),(3,16),(3,17),(3,18),(4,12),(4,13),(4,14),(4,16),(4,17),(4,18),(5,6),(5,7),(5,8),(5,9),(6,12),(6,13),(6,14),(6,16),(6,17),(6,18),(7,9),(7,11),(7,12),(7,13),(7,14),(7,16),(7,17),(7,18),(8,7),(8,9),(9,3),(10,1),(10,4),(10,8),(10,12),(10,13),(10,14),(11,11),(11,14),(12,6),(13,0),(13,3),(13,7),(14,1),(14,4),(15,2),(15,5),(15,9),(16,3),(16,9),(16,10),(17,7),(18,8),(18,10),(18,11),(18,12),(19,5),(19,6),(19,10),(19,11)]
 
-canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)
-canvas.pack()
-
-player = None
-timer_label = tk.Label(window, text="Time: 0s", font=("Arial", 12))
-timer_label.pack(side="top", anchor="ne")
-
-def get_clue():
-    clue = Locations_clue[final_destination_name]
-    messagebox.showinfo("Clue", f"{clue}\n")
+style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
+canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)  #use canvas from tkinter
+canvas.pack() #renders canvas into GUI
 
 def get_player_name():
     name = simpledialog.askstring("Player Name", "Hello there Player, what is your name?")
     return name
 
+
+
 def display_welcome_message(name):
-    popup = tk.Toplevel(window)
+    popup = tk.Toplevel(window) #popup instructions on how to play the game
     popup.geometry("400x200")
     label = tk.Label(popup, text="", wraplength=350, justify="left", padx=10, pady=10)
     label.pack(expand=True, fill="both")
@@ -108,8 +102,8 @@ def display_welcome_message(name):
         )
     ]
     # Initialize the pop-up window with the first message
-    index =0
-    title, message = messages[index]
+    index =0 #use index to define the sequence of popup messages
+    title, message = messages[index] #get the message title and content from the tuple within the list
     popup.title(title)
     label.config(text=message)
     def on_spacebar(event):
@@ -125,7 +119,8 @@ def display_welcome_message(name):
             popup.destroy()  # Close the pop-up when all messages have been shown
     
     # Start cycling through messages automatically after 2 seconds
-      
+
+   
     #click button to manually cycle through messages
     def on_button_click():
         nonlocal index
@@ -148,7 +143,9 @@ def display_welcome_message(name):
     #Close the popup when the window is closed using the close button
     popup.protocol("WM_DELETE_WINDOW", popup.destroy)
 
-
+def get_clue():
+    clue = Locations_clue[final_destination_name] #loop final destination clue to keep getting new clue for every round
+    messagebox.showinfo("Clue", f"{clue}\n")
 
 def choose_final_destination():
     global final_destination, final_destination_name
@@ -184,7 +181,7 @@ def check_win_condition():
             font=("Arial", 24),
             fill="green"
         )
-        if attempts >= 10:
+        if attempts >= 3:
             messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
             Locations.clear()
             Locations.update(BackupLocationsDictionary)
@@ -212,8 +209,14 @@ def handle_keypress(event):
     move_player(event.char)
 
 def restart_game():
-    global player_position, player, start_time
+    global player_position, player, start_time,total_time
+    if attempts==0: #every time start over the game, reinitialize the total_time and start_time variables
+        total_time =0 
+        start_time = time.time()
+        print('time has been reset') 
     update_timer()
+    
+    print(total_time)
     player_position = [0, 0]
     canvas.delete("all")
     choose_final_destination()
@@ -281,7 +284,10 @@ if player_name:
 start_time = time.time()
 def update_timer():
     if attempts>=10:
-        return #stop the timer after 10 attempts
+        
+        return
+    
+     #stop the timer after 10 attempts
     elapsed_time = time.time() - start_time
     timer_label.config(text=f"Time: {elapsed_time:.2f}s")
     window.after(100, update_timer)
