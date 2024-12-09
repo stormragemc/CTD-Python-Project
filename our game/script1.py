@@ -29,6 +29,7 @@ bgImage = tk.PhotoImage(file = 'bgImage.png')
 resizedImage = bgImage.zoom(25,25).subsample(9,9)
 
 style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
+
 Locations = {
      "Tang Zheng Tang Chinese Pavilion":  (10, 2),
     "Gym":  (16, 7) ,
@@ -59,7 +60,11 @@ Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between hous
 BackupLocationsDictionary = deepcopy(Locations) #backup dictionary so when Locations gets popped all other values are maintained using this backup 
 final_destination = None
 final_destination_name = None
-walls = []
+walls = [(0, 13),
+ (0, 14), 
+ (1, 10), 
+ (1, 11), (1, 12),(1,13),(1,14),(2,10),(2,11),(2,12),(2,13),(2,14),(2,16),(2,17),(3,12),(3,13),(3,14),(3,16),(3,17),(3,18),(4,12),(4,13),(4,14),(4,16),(4,17),(4,18),(5,6),(5,7),(5,8),(5,9),(6,12),(6,13),(6,14),(6,16),(6,17),(6,18),(7,9),(7,11),(7,12),(7,13),(7,14),(7,16),(7,17),(7,18),(8,7),(8,9),(9,3),(10,1),(10,4),(10,8),(10,12),(10,13),(10,14),(11,11),(11,14),(12,6),(13,0),(13,3),(13,7),(14,1),(14,4),(15,2),(15,5),(15,9),(16,3),(16,9),(16,10),(17,7),(18,8),(18,10),(18,11),(18,12),(19,5),(19,6),(19,10),(19,11)]
+
 canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)
 canvas.pack()
 
@@ -76,27 +81,74 @@ def get_player_name():
     return name
 
 def display_welcome_message(name):
-    messagebox.showinfo(
-        "Welcome to the Game!",
-        f"Hello {name}, welcome to our game of navigating through SUTD.\n\nPress the spacebar to skip.\n\n"
-        "This game was made possible by Srihari, Zhi Ying, Marcel, Kris, and Sherelle.\n"
-        "We welcome you into this game.\n\n"
-        "You will be navigating through the world-class SUTD campus, located in the heart of Singapore's innovation district. "
-        "The campus features state-of-the-art facilities designed to support interdisciplinary learning and cutting-edge research. "
-        "In this game, you will be navigating through Level 1 of the SUTD campus and experiencing different areas around the ground level "
-        "that are accessible to the public, without even having to touch the ground.\n"
-    )
-    messagebox.showinfo(
-        "Controls",
-        "You can navigate through the school compound using W to go up, S to go down, A to go left, and D to go right.\n\n"
-        "To quit the game, you can press ESC at any time."
-    )
-    messagebox.showinfo(
-        "Gameplay",
-        "We will give you a description of a specific location, and you will have to make your way there.\n\n"
-        "If you reach the wrong spot, a clue will be given to help guide you to the correct location."
-    )
-    messagebox.showinfo("Start the Adventure", f"Enjoy your adventure ahead, {name}!")
+    popup = tk.Toplevel(window)
+    popup.geometry("400x200")
+    label = tk.Label(popup, text="", wraplength=350, justify="left", padx=10, pady=10)
+    label.pack(expand=True, fill="both")
+    messages = [
+        (
+            "Welcome to the Game!",
+            f"Hello {name}, welcome to our game of navigating through SUTD.\n\n"
+            "This game was made possible by Srihari, Zhi Ying, Marcel, Kris, and Sherelle.\n\n"
+            "You will be navigating through the world-class SUTD campus, located in the heart of Singapore's innovation district.\n\n P.S: Press Spacebar to skip Instructions"
+        ),
+        (
+            "Controls",
+            "You can navigate using W to go up, S to go down, A to go left, and D to go right.\n\n"
+            "To quit the game, you can press ESC at any time."
+        ),
+        (
+            "Gameplay",
+            "We will give you a description of a specific location, and you will have to make your way there.\n\n"
+            "If you reach the wrong spot, a clue will be given to guide you."
+        ),
+        (
+            "Start the Adventure",
+            f"Enjoy your adventure ahead, {name}!"
+        )
+    ]
+    # Initialize the pop-up window with the first message
+    index =0
+    title, message = messages[index]
+    popup.title(title)
+    label.config(text=message)
+    def on_spacebar(event):
+        popup.destroy()  # Close the pop-up immediately when spacebar is pressed
+    def on_enter(event):
+        nonlocal index  # To access the index variable from the outer scope
+        index += 1
+        if index < len(messages):  # Check if we still have messages to show
+            title, message = messages[index]
+            popup.title(title)
+            label.config(text=message)
+        else:
+            popup.destroy()  # Close the pop-up when all messages have been shown
+    
+    # Start cycling through messages automatically after 2 seconds
+      
+    #click button to manually cycle through messages
+    def on_button_click():
+        nonlocal index
+        if index < len(messages):
+            title, message = messages[index]
+            popup.title(title)
+            label.config(text=message)
+            index += 1
+        else:
+            popup.destroy()  # Close the pop-up when all messages have been shown
+
+    # Create a button to manually cycle through messages
+    button = tk.Button(popup, text="Next", command=on_button_click)
+    button.pack(pady=10)
+
+    # Bind spacebar to immediately close the pop-up
+    popup.bind("<space>", on_spacebar) 
+    popup.bind("<Return>", on_enter)
+    
+    #Close the popup when the window is closed using the close button
+    popup.protocol("WM_DELETE_WINDOW", popup.destroy)
+
+
 
 def choose_final_destination():
     global final_destination, final_destination_name
@@ -225,6 +277,7 @@ if player_name:
         player_position[1] * cell_size + cell_size - 10,
         fill="blue"
     )
+
 start_time = time.time()
 def update_timer():
     if attempts>=10:
