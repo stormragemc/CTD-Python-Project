@@ -283,11 +283,11 @@ if player_name:
 
 start_time = time.time()
 def update_timer():
-    if attempts>=10:
+    if attempts>=3:
         
         return
     
-     #stop the timer after 10 attempts
+     #stop the timer after 3 attempts
     elapsed_time = time.time() - start_time
     timer_label.config(text=f"Time: {elapsed_time:.2f}s")
     window.after(100, update_timer)
