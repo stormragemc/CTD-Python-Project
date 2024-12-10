@@ -5,21 +5,23 @@ import requests
 import random
 import time  
 from copy import deepcopy
-#initialize the variables
-window = tk.Tk() #assign tkinter UI window
-window.title("Maze Navigator") #title of UI window
-style = Style() #for clue button style
-grid_size = 20   #20x20 grid
-cell_size = 25  #25 pixel cell size
-player_position = [0, 0] #starting position of player
-attempts = 0  #what round
-total_time = 0  #initialize total time taken to complete the game
-player = None #initialize player state
-final_destination = None #initialize final destination
-final_destination_name = None #initialize final destination's name
+# Initialize the main variables for the application
+window = tk.Tk()  # Create the main UI window
+window.title("Maze Navigator")  # Set the window title
+style = Style()  # Define a style object for styling widgets
+grid_size = 20  # Grid dimensions (20x20)
+cell_size = 25  # Cell size in pixels
+player_position = [0, 0]  # Initial player position on the grid
+attempts = 0  # Count the number of rounds
+total_time = 0  # Track total time taken for all rounds
+player = None  # Player object on the canvas
+final_destination = None  # The target location the player must find
+final_destination_name = None  # Name of the target location
 walls = [(0, 13),(0, 14), (1, 10), (1, 11), (1, 12),(1,13),(1,14),(2,10),(2,11),(2,12),(2,13),(2,14),(2,16),(2,17),(3,12),(3,13),(3,14),(3,16),(3,17),(3,18),(4,12),(4,13),(4,14),(4,16),(4,17),(4,18),(5,6),(5,7),(5,8),(5,9),(6,12),(6,13),(6,14),(6,16),(6,17),(6,18),(7,9),(7,11),(7,12),(7,13),(7,14),(7,16),(7,17),(7,18),(8,7),(8,9),(9,3),(10,1),(10,4),(10,8),(10,12),(10,13),(10,14),(11,11),(11,14),(12,6),(13,0),(13,3),(13,7),(14,1),(14,4),(15,2),(15,5),(15,9),(16,3),(16,9),(16,10),(17,7),(18,8),(18,10),(18,11),(18,12),(19,5),(19,6),(19,10),(19,11)]
-#Obstacles position coordinates
-getStarURL = requests.get('https://i.ibb.co/JpyHGwB/star.png') #make HTTP request to acquire our web-hosted image URL
+# List of wall coordinates (obstacle positions)
+
+# Fetch images for the game
+getStarURL = requests.get('https://i.ibb.co/JpyHGwB/star.png') #Make HTTP request to acquire our web-hosted image URL
 getStarURL.raise_for_status() 
 with open("star.png", "wb") as file: #After url acquired, save the image into file
     file.write(getStarURL.content)
@@ -32,9 +34,13 @@ star = rawStar.subsample(10,10)
 bgImage = tk.PhotoImage(file = 'bgImage.png')
 resizedImage = bgImage.zoom(25,25).subsample(9,9)
 
+
+# Define the timer label
 timer_label = tk.Label(window, text="Time: 0s", font=("Arial", 12)) #label for the timer value
 timer_label.pack(side="top", anchor="ne")
 
+
+# Define the locations and clues for the game
 Locations = { #Coordinates of each important site's markers
      "Tang Zheng Tang Chinese Pavilion":  (10, 2),
     "Gym":  (16, 7) ,
@@ -62,18 +68,24 @@ Locations_clue = {"Tang Zheng Tang Chinese Pavilion" : "Building is between hous
              "Campus Centre" : "The site that connects the three main buildings",
              "Vending machines" : "Come to our Canteen"} #dictionary for clues
 
+
+# Backup dictionary for resetting the game
 BackupLocationsDictionary = deepcopy(Locations) #backup dictionary so when Locations gets popped all other values are maintained using this backup 
 
+
+# Configure clue button style
 style.configure('clue.TButton', font =("Courier New", 15, 'bold'),foreground = 'red') #font style for clue button
 canvas = tk.Canvas(window, width=grid_size * cell_size, height=grid_size * cell_size)  #use canvas from tkinter
 canvas.pack() #renders canvas into GUI
 
+
+# Function to get the player's name
 def get_player_name():
     name = simpledialog.askstring("Player Name", "Hello there Player, what is your name?")
     return name
 
 
-
+# Function to display the welcome message and instructions
 def display_welcome_message(name):
     popup = tk.Toplevel(window) #popup instructions on how to play the game
     popup.geometry("400x200")
@@ -142,11 +154,11 @@ def display_welcome_message(name):
     
     #Close the popup when the window is closed using the close button
     popup.protocol("WM_DELETE_WINDOW", popup.destroy)
-
+# Function to show a clue about the destination
 def get_clue():
     clue = Locations_clue[final_destination_name] #loop final destination clue to keep getting new clue for every round
     messagebox.showinfo("Clue", f"{clue}\n")
-
+# Function to choose a random destination from the Locations dictionary
 def choose_final_destination():
     global final_destination, final_destination_name
     final_destination_name = random.choice(list(Locations.keys()))
@@ -154,7 +166,7 @@ def choose_final_destination():
     Locations.pop(final_destination_name) #prevent the same location from being used as a final destination more than once a round
     destination_label.config(text=f"Find: {final_destination_name}")
     return final_destination_name
-
+# Function to update the player's position on the canvas
 def update_player_position():
     canvas.coords(player, 
                   player_position[0] * cell_size + 10, 
@@ -166,7 +178,7 @@ def update_player_position():
             if val == tuple(player_position):
                 messagebox.showinfo("Key Area", key)
     check_win_condition()
-
+# Function to check if the player has reached the destination
 def check_win_condition():
     global attempts, total_time
     if tuple(player_position) == final_destination:
@@ -185,14 +197,15 @@ def check_win_condition():
             messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
             Locations.clear()
             Locations.update(BackupLocationsDictionary)
-            restart_button.config(state="normal")  # Enable restart button after 3 rounds
+            attempts = 0
+            restart_button.config(state="normal")  # Enable restart button after 10 rounds
         else:
             restart_game()
-
+# Function to move the player based on keypress
 def move_player(postal_code):
     global player_position
     moves = {"w": (0, -1), "a": (-1, 0), "s": (0, 1), "d": (1, 0)}
-    if postal_code in moves and attempts<3:
+    if postal_code in moves:
         dx, dy = moves[postal_code]
         new_x = player_position[0] + dx
         new_y = player_position[1] + dy
@@ -201,16 +214,14 @@ def move_player(postal_code):
             update_player_position()
         else:
             messagebox.showinfo("Blocked", "You hit a wall! Try a different direction.")
-
+# Function to handle keypress events for player movement
 def handle_keypress(event):
     if event.keysym == 'Escape':
         exit_game()
     move_player(event.char)
-
+# Function to restart the game
 def restart_game():
-    global attempts, player_position, player, start_time,total_time
-    if attempts>=3:
-        attempts=0
+    global player_position, player, start_time,total_time
     if attempts==0: #every time start over the game, reinitialize the total_time and start_time variables
         total_time =0 
         start_time = time.time()
@@ -234,11 +245,11 @@ def restart_game():
     start_time = time.time()  # Reset the timer to the current time
     timer_label.config(text="Time: 0s")  # Reset the timer display
     restart_button.config(state="disabled")  # Disable restart button when a new game starts
-
+# Function to exit the game
 def exit_game():
     if messagebox.askokcancel("Quit", "Do you really want to quit?"):
         window.destroy()
-
+# Function to draw the grid on the canvas
 def draw_grid():
     bg = canvas.create_image(0, 0, anchor=tk.NW, image=resizedImage)
     for i in range(grid_size):
@@ -249,7 +260,7 @@ def draw_grid():
                 canvas.create_image(x1, y1, anchor="nw", image=star)
             else:
                 canvas.create_rectangle(x1, y1, x2, y2, outline="black")
-    
+ # Function to draw the start and end points on the canvas
 def draw_start_end():
     canvas.create_rectangle(player_position[0] * cell_size, 
                             player_position[1] * cell_size,
@@ -259,14 +270,19 @@ def draw_start_end():
     canvas.create_image(final_destination[0] * cell_size, 
                         final_destination[1] * cell_size, 
                         anchor = "nw", image = star)
+    
+# Create buttons for the UI
 Clue_button = Button(window, text="Clue", command=get_clue, style = 'clue.TButton') #generates clues for where the destination is
 Clue_button.pack(side="left", padx=20)
 restart_button = tk.Button(window, text="Restart", command=restart_game, state="disabled")
 restart_button.pack(side="left", padx=20)
 exit_button = tk.Button(window, text="Exit", command=exit_game)
 exit_button.pack(side="left", padx=20)
+# Label to display the destination name
 destination_label = tk.Label(window, text="", font=("Arial", 21))
-destination_label.pack(side="left", padx=250) #text telling you which building you should find to win the round
+destination_label.pack(side="left", padx=250) #Text describing which building to find to win the round
+
+# Initialize the game by getting the player's name and setting up the grid
 player_name = get_player_name()
 if player_name:
     display_welcome_message(player_name)
@@ -283,6 +299,7 @@ if player_name:
     )
 
 start_time = time.time()
+# Timer function to update elapsed time
 def update_timer():
     if attempts>=3:
         
@@ -293,7 +310,7 @@ def update_timer():
     timer_label.config(text=f"Time: {elapsed_time:.2f}s")
     window.after(100, update_timer)
 update_timer()
-
+# Bind keypress events to the window
 window.bind("<Key>", handle_keypress)
-
+# Start the main event loop for the Tkinter window
 window.mainloop()
