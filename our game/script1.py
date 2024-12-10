@@ -185,15 +185,14 @@ def check_win_condition():
             messagebox.showinfo("Game Over", f"Total time: {total_time:.2f} seconds.\nClick Restart to play again.")
             Locations.clear()
             Locations.update(BackupLocationsDictionary)
-            attempts = 0
-            restart_button.config(state="normal")  # Enable restart button after 10 rounds
+            restart_button.config(state="normal")  # Enable restart button after 3 rounds
         else:
             restart_game()
 
 def move_player(postal_code):
     global player_position
     moves = {"w": (0, -1), "a": (-1, 0), "s": (0, 1), "d": (1, 0)}
-    if postal_code in moves:
+    if postal_code in moves and attempts<3:
         dx, dy = moves[postal_code]
         new_x = player_position[0] + dx
         new_y = player_position[1] + dy
@@ -209,7 +208,9 @@ def handle_keypress(event):
     move_player(event.char)
 
 def restart_game():
-    global player_position, player, start_time,total_time
+    global attempts, player_position, player, start_time,total_time
+    if attempts>=3:
+        attempts=0
     if attempts==0: #every time start over the game, reinitialize the total_time and start_time variables
         total_time =0 
         start_time = time.time()
